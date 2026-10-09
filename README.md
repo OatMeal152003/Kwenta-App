@@ -1,24 +1,42 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Kwenta — Offline Money Tracker
 
-## Getting Started
+Offline-first installable PWA for Filipino users. Next.js 14 App Router + TypeScript + Tailwind v3 + Dexie (IndexedDB). No backend, no login in v1.
 
-First, run the development server:
-
+## Setup
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run
+```bash
+npm run dev
+# open http://localhost:3000
+npm test        # vitest: money conversion tests
+npm run build   # production build (bundles Serwist SW)
+npm start       # serve production on http://localhost:3000
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Test each feature
+1. **DB + money**: Home shows "DB ready", format test `₱1,234.56`. `npm test` → 5/5.
+2. **Add flow**: `/add` → amount → category → Save. Date defaults to today (Asia/Manila), note optional.
+3. **Home**: month ‹ › nav, balance/income/spent, budget strip, recent with edit ✏️ + delete 🗑️ + Undo (5s).
+4. **Wallets/Cats**: `/me` → add/rename/delete wallets (live balances), add/delete categories.
+5. **Stats**: `/stats` → Recharts donut by category + daily groups.
+6. **Budgets**: `/budgets` → monthly limit per category, gentle "under budget 🌱", coral only when over.
+7. **Utang**: `/debts` (linked from Me) → owes-me / i-owe totals, add, mark Paid.
+8. **CSV**: `/me` → Export downloads backup; Import merges by id (newer updatedAt wins).
+9. **PWA + PIN**: manifest + Serwist SW (fully offline), icons in `public/icons`. PIN in `/me` (PBKDF2-SHA256, 5 tries → 30s cooldown).
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Data model (all centavos, sync-ready)
+- Base: `id` UUID, `createdAt/updatedAt`, `deletedAt` soft-delete.
+- `wallets(id,name,kind,icon,color,sortOrder)`, `categories(id,name,kind,icon,color)`,
+  `transactions(id,type,amountCentavos,categoryId,walletId,note,date,timestamp,month,currency)`,
+  `budgets(id,categoryId,month,limitCentavos)`, `debts(id,direction,person,amountCentavos,date,isPaid)`, `settings(key,value)`.
+
+## Azure static hosting (optional, manual)
+V1 needs no backend, so this is just static hosting when you want a shareable link:
+1. `az login`, pick subscription, then create a Static Web App pointing at this repo (build: `npm run build`, output `.next` — or switch to `output: export` for pure static).
+2. No `azure.yaml`/`azd` is used in this repo; deploy via portal/CLI and paste the preview URL here for the deploy gate.
 
 ## Learn More
 
